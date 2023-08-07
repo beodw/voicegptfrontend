@@ -1,13 +1,82 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+@layer utilities {
+  .bg-primary {
+    background-color: #343541;
+  }
+
+  .red {
+    border: 2px solid red;
+  }
+  .green {
+    border: 2px solid green;
+  }
+  .blue {
+    border: 2px solid blue;
+  }
+}
+
+@layer components {
+  .infoText {
+    @apply p-4 bg-gray-700 opacity-50 rounded-lg max-w-[300px];
+  }
+
+  .chatRow {
+    @apply rounded-lg px-5 py-2 sm:py-3 text-sm flex items-center justify-center space-x-2 hover:bg-gray-700/70 cursor-pointer text-gray-300 transition-all duration-200 ease-out;
+  }
+
+  .box_shadow {
+    -webkit-box-shadow: 4px -28px 48px 15px rgba(52, 53, 65, 0.8);
+    -moz-box-shadow: 4px -28px 48px 15px rgba(52, 53, 65, 0.8);
+    box-shadow: 4px -28px 48px 15px rgba(52, 53, 65, 0.8);
+  }
+
+  .message {
+    line-height: 50px;
+    letter-spacing: 0.08rem;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+  }
+
+  .hide__scroll__bar::-webkit-scrollbar {
+    -webkit-appearance: none;
+    appearance: none;
+    display: none;
+  }
+}
+
+.pointer_none * {
+  pointer-events: none;
+}
+
+.blink {
+  width: 3px;
+  display: inline-block;
+  animation: blink 1s infinite;
+  background-color: rgb(156 163 175);
+}
+
+@keyframes blink {
+  49% {
+    background-color: rgb(156 163 175);
+  }
+  50%,
+  99% {
+    background-color: transparent;
+  }
 }
