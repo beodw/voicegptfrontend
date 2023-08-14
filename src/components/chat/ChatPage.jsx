@@ -20,7 +20,9 @@ var isSubmitting = false;
  * @param {chatId<string>}
  * @returns {ReactComponentElement}
 */
-var messages = []
+
+// console.table()
+var messages = JSON.parse(localStorage.getItem("voiceGPTLocalStorage")) ?? [];
 const ChatPage = ({ chatId, setListening }) => {
   // const { data: session } = useSession();
   // const [messages, loading, error] = useCollection(
@@ -61,6 +63,7 @@ const ChatPage = ({ chatId, setListening }) => {
   const [userInteracted, setUserInteracted] = useState(false);
   const [__, setMessages] = useState([])
   let [audioContext, setAudioContext] = useState(false);
+  const [sessionStarted, setSessionStarted] = useState(false);
   
   const [recognitionIsInitialized, setRecognitionIsInitialized] = useState(false)
 
@@ -97,6 +100,7 @@ const ChatPage = ({ chatId, setListening }) => {
                   setSpeechText(lastDetectedText)
               }
               setListening(true)
+              setSessionStarted(true)
 
               // Check if currently reading text.
               // if(isReading) return;
@@ -170,6 +174,7 @@ const ChatPage = ({ chatId, setListening }) => {
               setMessages([...messages, {isChatGpt: true, text:gptResponseText}])
               messages = [...messages, {isChatGpt:true, text:gptResponseText}]
               // document.getElementById("response").innerText = r.message.choices[0].message.content;
+              saveToLocalStorage(messages);
               let audioSource = playByteArray(r.audio.data, init());
               audioSource.addEventListener('ended', () => {setTimeout(() => {isSubmitting = false; setListening(false);}, 2000); setIsSubmitting(false);});
             }));
@@ -224,6 +229,16 @@ const ChatPage = ({ chatId, setListening }) => {
       // Play immediately
       source.start(0);
       return source;
+  }
+
+
+  function saveToLocalStorage(msgs){
+    // const conversationHistory = localStorage.getItem("voiceGPTLocalStorage");
+    // if(!conversationHistory)
+    localStorage.setItem("voiceGPTLocalStorage", JSON.stringify([]))
+    localStorage.setItem("voiceGPTLocalStorage", JSON.stringify([...msgs]))
+
+    // console.log(conversationHistory);
   }
 
 
@@ -316,19 +331,19 @@ const ChatPage = ({ chatId, setListening }) => {
   )}
 
   {/* <img src="../../assets/microphone.png" /> */}
-
-      {messages.map((message, index) => {
+      {recognitionIsInitialized && messages.map((message, index) => {
         return (
           <Message
             key={index}
             message={message.text}
             isChatGpt={message.isChatGpt}
             // chatRef={chatPageRef}
-            // last={true
-            //   // index + 1 === messages.docs.length &&
-            //   // message.data().user.avatar === "ChatGptIcon" &&
-            //   // isMessageNew(message.data().createdAt)
-            // }
+            sessionStarted={sessionStarted}
+            isLastMessage={index == messages.length - 1
+              // index + 1 === messages.docs.length &&
+              // message.data().user.avatar === "ChatGptIcon" &&
+              // isMessageNew(message.data().createdAt)
+            }
           />
         );
       })}

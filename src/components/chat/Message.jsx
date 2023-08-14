@@ -5,39 +5,43 @@ import myPic from "../../assets/myPic.png";
 // import Image from "next/image";
 
 
-const Message = ({ message, isChatGpt}) => {
+const Message = ({ message, isChatGpt, isLastMessage, sessionStarted}) => {
 
   const textBoxRef = useRef(null);
   const [_message, setMessage] = useState(message);
 
   useEffect(()=>{
-    typeEffect(message, 50);
+    typeEffect(message, 25);
   },[]);
 
   // Typing Effect
   function typeEffect(text, delay) {
 
       let i = 0;
+      console.log("sessionStarted =>", sessionStarted);
+    if(isLastMessage && sessionStarted){
+        const typeInterval = setInterval(() => {
 
-      const typeInterval = setInterval(() => {
+        if (i <= text.length) {
 
-      if (i <= text.length) {
+        // console.log(text.substring(0, i));
+        // let messageDiv = document.getElementById("messageDiv");
+        if(textBoxRef && textBoxRef.current){
+            textBoxRef.current.innerText = text.substring(0, i)
+        }
 
-      // console.log(text.substring(0, i));
-      // let messageDiv = document.getElementById("messageDiv");
-      if(textBoxRef && textBoxRef.current){
-          textBoxRef.current.innerText = text.substring(0, i)
+        i++;
+
+        } else {
+
+        clearInterval(typeInterval);
+
+        }
+
+        }, delay);
+    }else {
+        textBoxRef.current.innerText = text;
       }
-
-      i++;
-
-      } else {
-
-      clearInterval(typeInterval);
-
-      }
-
-      }, delay);
 
   }
 
