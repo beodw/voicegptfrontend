@@ -23,7 +23,7 @@ var isSubmitting = false;
 
 // console.table()
 var messages = JSON.parse(localStorage.getItem("voiceGPTLocalStorage")) ?? [];
-const ChatPage = ({ chatId, setListening }) => {
+const ChatPage = ({ chatId, setListening, initSession }) => {
   // const { data: session } = useSession();
   // const [messages, loading, error] = useCollection(
   //   query(
@@ -183,7 +183,7 @@ const ChatPage = ({ chatId, setListening }) => {
 
   }, [_])
 
-  const submitText = (data) => fetch('https://oydj5w7nn5tdhzwbtqkrlxu5le0lrkbj.lambda-url.eu-west-2.on.aws',{
+  const submitText = (data) => fetch('https://hiss7jkohg254p62dmmjilppia0gzbrb.lambda-url.eu-west-2.on.aws/',{
       method: 'POST',
       mode: 'cors',
       headers: {
@@ -324,6 +324,7 @@ const ChatPage = ({ chatId, setListening }) => {
         <MicrophoneIcon onClick={()=> {      
           startListening();
           setRecognitionIsInitialized(true)
+          initSession(true)
         }
       } className="text-white w-[48px] h-[48px] hover:cursor-pointer border rounded-full p-2"/>
       </div>

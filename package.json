@@ -5,6 +5,7 @@
   "dependencies": {
     "@google-cloud/text-to-speech": "^4.2.3",
     "@heroicons/react": "^2.0.17",
+    "@react-oauth/google": "^0.11.1",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
@@ -13,6 +14,7 @@
     "firebase-admin": "^11.7.0",
     "openai": "^3.3.0",
     "react": "^18.2.0",
+    "react-apple-login": "^1.1.6",
     "react-dom": "^18.2.0",
     "react-firebase-hooks": "^5.1.1",
     "react-hot-toast": "^2.4.1",
