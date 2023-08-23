@@ -3,21 +3,22 @@ import Page from './app/page';
 import RootLayout from './app/layout';
 import { useEffect, useState } from 'react';
 import LoginPage from './components/layout/LoginPage';
-import { retrieveCookie, setAuthCookieVal } from "./lib/session";
+import { retrieveCookie } from "./lib/session";
 function App() {
-  const [authCookie, setAuthCookie] = useState(null);
+  const [authCookie, setAuthCookieState] = useState(null);
 
   useEffect(() => {
     const authCoookieVal = retrieveCookie("voiceGPTAuthToken");
-    setAuthCookie(authCoookieVal ?? null);
+    setAuthCookieState(authCoookieVal ?? null);
     // add event listener for auth state
     document.body.addEventListener("authCookieChanged", () => {
-      const authCookieVal = retrieveCookie("voiceGPTAuthToken");
+      const authCookieVals = retrieveCookie("voiceGPTAuthToken");
+      setAuthCookieState(authCookieVals ?? null);
     });
 
       authCoookieVal &&
        fetch("https://tl66le4fdc5n3exuvyopygfyaq0ddvmn.lambda-url.eu-west-2.on.aws",{method: "POST", body:JSON.stringify({oauthCode: authCoookieVal})}).then(r => {
-              setAuthCookie(authCoookieVal ?? null);
+              setAuthCookieState(authCoookieVal ?? null);
         }).catch(e =>{console.error(e); alert("Could not login! Check internet or contact admin if problem persists.")})
   },[]);
 
