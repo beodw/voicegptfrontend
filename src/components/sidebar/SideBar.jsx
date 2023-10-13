@@ -1,29 +1,35 @@
-// import { orderBy, query } from "firebase/firestore";
-// import { signOut, useSession } from "next-auth/react";
-// import { useCollection } from "react-firebase-hooks/firestore";
-// import { getChatRef } from "../../lib/firebase";
-import ChatRow from "./ChatRow";
 import ModelSelection from "./ModelSelection";
 import NewChat from "./NewChat";
+import { useDispatch, useSelector } from "react-redux";
+import { toggleSurvey } from "../../redux/appStateSlice";
 
 const SideBar = ({ showModal }) => {
-  // const { data: session } = useSession();
-  // const [chats, loading, error] = useCollection(
-  //   // session &&
-  //   //   query(getChatRef(session.user?.email!), orderBy("createdAt", "desc"))
-  // );
+
+  const appState = useSelector((s)=>s.appState)
+  const dispatch = useDispatch()
+
+  const showSurvey = ()=> {
+    dispatch(toggleSurvey(s=> !s.surveyModalIsVisible))
+  }
 
   return (
-    <nav
+    <div
       className={`fixed md:sticky top-0 bottom-0 left-0 bg-[#202123] max-w-[15rem] lg:max-w-[300px] h-screen overflow-y-auto min-w-[15rem] lg:w-full p-2 flex flex-col transition-transform duration-200 ease-linear z-10 md:translate-x-0 ${
         showModal ? "translate-x-0" : "-translate-x-full"
       }`}
     >
-      <div className="flex-1 overflow-y-auto">
-        <div>
+      <div className="flex overflow-y-auto bg-red grow">
+        <div className="bg-red flex flex-col grow">
           {/* new chat */}
           <NewChat />
 
+          <div className="grow"></div>
+
+          <div className="flex justify-center w-full">
+            <button onClick={showSurvey} className="truncate w-40 chatRow">Win A Reward</button>
+          </div>
+          
+          
           <div>
             <ModelSelection />
           </div>
@@ -60,7 +66,7 @@ const SideBar = ({ showModal }) => {
           <p className="text-lg font-bold text-gray-500">Log Out</p>
         </div>
       )}
-    </nav>
+    </div>
   );
 };
 

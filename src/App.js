@@ -4,6 +4,8 @@ import RootLayout from './app/layout';
 import { useEffect, useState } from 'react';
 import LoginPage from './components/layout/LoginPage';
 import { retrieveCookie } from "./lib/session";
+import { useSelector } from 'react-redux';
+import RegularSurvey from './components/surveys/RegularSurvey';
 function App() {
   const [authCookie, setAuthCookieState] = useState(null);
 
@@ -22,10 +24,18 @@ function App() {
         }).catch(e =>{console.error(e); alert("Could not login! Check internet or contact admin if problem persists.")})
   },[]);
 
+
+  const appState = useSelector(s=>s.appState)
+
   const appComponents = (
-      <RootLayout>
-        <Page/>
-      </RootLayout>
+        <RootLayout>
+            {
+              appState.surveyModalIsVisible
+              &&
+              <RegularSurvey/>
+            }
+            <Page/>
+        </RootLayout>
   );
 
   const loginPage = <LoginPage/>;

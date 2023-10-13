@@ -19,7 +19,7 @@ const AppLayOut = ({ children }) => {
         }}
         className="relative w-full"
       >
-        <Toaster position="top-right" />
+        {/* <Toaster position="top-right" /> */}
         
         {children}
 
