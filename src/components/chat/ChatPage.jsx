@@ -1,16 +1,12 @@
 "use client";
 
-import { ArrowDownCircleIcon } from "@heroicons/react/24/outline";
-// import { orderBy, query } from "firebase/firestore";
-// import { useSession } from "next-auth/react";
 import { useEffect, useRef,useState } from "react";
-// import { useCollection } from "react-firebase-hooks/firestore";
-// import { getMessageRef } from "../../lib/firebase";
 import Message from "./Message";
 import { ArrowDownIcon, BoltIcon, ExclamationTriangleIcon, SunIcon } from "@heroicons/react/24/solid";
 import {MicrophoneIcon} from "@heroicons/react/24/solid";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleSurvey } from "../../redux/appStateSlice";
+import { retrieveDataFromLocalStorage, storeDataInLocalStorage } from "../../lib/session";
 
 // Key Phrases for bot to listen for.
 const keyPhrases = {
@@ -27,39 +23,6 @@ var isSubmitting = false;
 // console.table()
 var messages = JSON.parse(localStorage.getItem("voiceGPTLocalStorage")) ?? [];
 const ChatPage = ({ chatId, setListening, initSession }) => {
-  // const { data: session } = useSession();
-  // const [messages, loading, error] = useCollection(
-  //   query(
-  //     getMessageRef(session?.user?.email!, chatId),
-  //     orderBy("createdAt", "asc")
-  //   )
-  // );
-
-  // const chatPageRef = useRef<null | HTMLDivElement>(null);
-
-  // function isMessageNew(time: any) {
-  //   let isNew = true;
-
-  //   if (time === null) {
-  //     return isNew;
-  //   }
-
-  //   const _time = new Date(time.toDate()).getTime();
-  //   const currentTime = new Date().getTime();
-  //   const remainingTime = currentTime - _time;
-
-  //   isNew = remainingTime < 10_000 ? true : false;
-
-  //   return isNew;
-  // }
-
-  // useEffect(() => {
-  //   if (chatPageRef.current) {
-  //     chatPageRef.current.scrollTo(0, Number(chatPageRef.current.scrollHeight));
-  //   }
-  // }, [messages]);
-
-
   const [speechText, setSpeechText] = useState("");
   let [_, setIsSubmitting] = useState(false);
   const [isReading, setIsReading] = useState(false);
@@ -69,6 +32,13 @@ const ChatPage = ({ chatId, setListening, initSession }) => {
   const [sessionStarted, setSessionStarted] = useState(false);
   
   const [recognitionIsInitialized, setRecognitionIsInitialized] = useState(false)
+
+  const [isFirstVisit, setIsFirstVisit] = useState(true)
+  
+  useEffect(() => {
+    const isFirstVisit = retrieveDataFromLocalStorage("isFirstVisit")
+    setIsFirstVisit(isFirstVisit ?? true)
+  })
 
   function startListening() {
     window.speechRecognitionObject.start();
@@ -325,22 +295,23 @@ const ChatPage = ({ chatId, setListening, initSession }) => {
 
   </div>)}
     
-  <div className="flex flex-col items-center w-full animate-pulse mt-8">
+  {!isFirstVisit && <div className="flex flex-col items-center w-full animate-pulse mt-8">
       <ArrowDownIcon className="h-8 w-8 mt-5 mx-auto text-white animate-bounce" />
       <button onClick={showSurvey} className="truncate w-40 chatRow">Click To Win A Reward</button>
-  </div>
+  </div>}
 
   {!recognitionIsInitialized && (
     <div className=" ">
       <p className="mt-10 text-center text-white">
         Click the mic below to get started.
       </p>
-      {/* <ArrowDownIcon className="h-8 w-8 mt-5 mx-auto text-white animate-bounce" /> */}
+      {isFirstVisit && <ArrowDownIcon className="h-8 w-8 mt-5 mx-auto text-white animate-bounce" />}
       <div className="w-full flex justify-center">
         <MicrophoneIcon onClick={()=> {      
           startListening();
           setRecognitionIsInitialized(true)
           initSession(true)
+          storeDataInLocalStorage("isFirstVisit", false)
         }
       } className="text-white w-[48px] h-[48px] hover:cursor-pointer border rounded-full p-2"/>
       </div>

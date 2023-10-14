@@ -24,4 +24,30 @@ const setAuthCookieVal = (name, value, daysToExpire) => {
       }
   }
 
-export {setAuthCookieVal, retrieveCookie, autheCookieChangeEvent}
+function storeDataInLocalStorage(key, data) {
+  try {
+    const serializedData = JSON.stringify(data);
+    localStorage.setItem(key, serializedData);
+    console.log('Data stored successfully in local storage.');
+  } catch (error) {
+    console.error('Error storing data in local storage:', error);
+  }
+}
+
+function retrieveDataFromLocalStorage(key) {
+  try {
+    const serializedData = localStorage.getItem(key);
+    if (serializedData === null) {
+      console.log('No data found in local storage for the given key.');
+      return null;
+    }
+
+    const parsedData = JSON.parse(serializedData);
+    return parsedData;
+  } catch (error) {
+    console.error('Error retrieving data from local storage:', error);
+    return null;
+  }
+}
+
+export {setAuthCookieVal, retrieveCookie, storeDataInLocalStorage, retrieveDataFromLocalStorage, autheCookieChangeEvent}
