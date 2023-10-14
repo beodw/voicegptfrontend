@@ -15,6 +15,7 @@ function RegularSurvey() {
     const [additionalThoughts, setAdditionalThoughts] = useState("");
     const [furtherAdditionalThoughts, setFurtherAdditionalThoughts] = useState("");
     const [isSurveyAlreadyFilled, setIsSurveyAlreadyFilled] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const dispatch = useDispatch();
     const closeSurvey = ()=>{
         dispatch(toggleSurvey(false))
@@ -45,24 +46,32 @@ function RegularSurvey() {
         const oauthCode = retrieveCookie("voiceGPTAuthToken");
         if (!validate()) return
         const payLoad = {oauthCode, questions, additionalThoughts}
-        console.log(payLoad)
+        setIsSubmitting(true)
 
          fetch("https://ycwfx5u6r5bjnzvnsuv2rnpgmi0sosyb.lambda-url.eu-west-2.on.aws/ ",{method: "POST", body:JSON.stringify(payLoad)})
          .then(r => {
             if (r.ok) r.json()
             .then(data => 
                     {
-                        console.log(data);
                         if(data.status == 200) setIsFormComplete(true)
                         if(data.status == 400) {
                             setIsSurveyAlreadyFilled(true)
                             setIsFormComplete(true)
                         }
+                        setIsSubmitting(false)
                     }
             )
-            .catch(e=>console.log(e))
+            .catch(e=>{
+                console.log(e)
+                alert("Could not submit survey.")
+                setIsSubmitting(false)
+            })
         }) 
-         .catch(e => console.error(e));
+         .catch(e => {
+            console.error(e)
+            alert("Could not submit survey.")
+            setIsSubmitting(false)
+        });
     }
 
     const submitFurtherFeedBack = () =>  {}
@@ -88,11 +97,9 @@ function RegularSurvey() {
                 <>
                     <h1 className='text-gray-300 font-bold text-xs xs:text-sm md:text-lg lg:text-xl'>Congratulations!</h1>
                     <h1 className='text-gray-300 mt-2 text-xs xs:text-sm md:text-lg'>You have won an Amazon Gift Card.</h1>
-                    {/* <div className='grow flex justify-center items-center w-full'> */}
-                        <div className='rounded-lg p-2 w-1/2 border border-gray-500 flex items-center justify-center overflow-hidden mt-4'>
-                            <h1 className='text-gray-300 text-xs xs:text-sm md:text-lg'>Code: SDKS787*&*SDSlksaj</h1>
-                        </div>
-                    {/* </div> */}
+                    <div className='rounded-lg p-2 w-1/2 border border-gray-500 flex items-center justify-center overflow-hidden mt-4'>
+                        <h1 className='text-gray-300 text-xs xs:text-sm md:text-lg'>Code: SDKS787*&*SDSlksaj</h1>
+                    </div>
                 </>
                 :
                 <>
@@ -121,7 +128,9 @@ function RegularSurvey() {
                         </div>
                     </div>
                     <div className='text-white flex w-full mt-6 px-10 sm:px-12'>
-                        <button onClick={submit} className='bg-green-500 rounded-lg text-xs xs:text-sm md:text-lg lg:text-xl py-2 px-4 xs:px-6 '>Submit</button>
+                        <button onClick={submit} className='bg-green-500 rounded-lg text-xs xs:text-sm md:text-lg lg:text-xl py-2 px-4 xs:px-6 '>
+                            {isSubmitting? "Submitting": "Submit"}
+                        </button>
                     </div>
                 </>
             }
