@@ -129,7 +129,7 @@ function RegularSurvey() {
                     </div>
                     <div className='text-white flex w-full mt-6 px-10 sm:px-12'>
                         <button onClick={submit} className='bg-green-500 rounded-lg text-xs xs:text-sm md:text-lg lg:text-xl py-2 px-4 xs:px-6 '>
-                            {isSubmitting? "Submitting": "Submit"}
+                            {isSubmitting? "Submitting...": "Submit"}
                         </button>
                     </div>
                 </>
