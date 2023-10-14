@@ -295,7 +295,7 @@ const ChatPage = ({ chatId, setListening, initSession }) => {
 
   </div>)}
     
-  {!isFirstVisit && <div className="flex flex-col items-center w-full animate-pulse mt-8">
+  {!isFirstVisit && !recognitionIsInitialized && <div className="flex flex-col items-center w-full animate-pulse mt-8">
       <ArrowDownIcon className="h-8 w-8 mt-5 mx-auto text-white animate-bounce" />
       <button onClick={showSurvey} className="truncate w-40 chatRow">Click To Win A Reward</button>
   </div>}
@@ -305,7 +305,7 @@ const ChatPage = ({ chatId, setListening, initSession }) => {
       <p className="mt-10 text-center text-white">
         Click the mic below to get started.
       </p>
-      {isFirstVisit && <ArrowDownIcon className="h-8 w-8 mt-5 mx-auto text-white animate-bounce" />}
+      {isFirstVisit && !recognitionIsInitialized && <ArrowDownIcon className="h-8 w-8 mt-5 mx-auto text-white animate-bounce" />}
       <div className="w-full flex justify-center">
         <MicrophoneIcon onClick={()=> {      
           startListening();
