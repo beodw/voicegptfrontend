@@ -25,9 +25,9 @@ const SideBar = ({ showModal }) => {
 
           <div className="grow"></div>
 
-          <div className="flex justify-center w-full">
+          {/* <div className="flex justify-center w-full animate-pulse">
             <button onClick={showSurvey} className="truncate w-40 chatRow">Win A Reward</button>
-          </div>
+          </div> */}
           
           
           <div>

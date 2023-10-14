@@ -9,6 +9,9 @@ import { useEffect, useRef,useState } from "react";
 import Message from "./Message";
 import { ArrowDownIcon, BoltIcon, ExclamationTriangleIcon, SunIcon } from "@heroicons/react/24/solid";
 import {MicrophoneIcon} from "@heroicons/react/24/solid";
+import { useDispatch, useSelector } from "react-redux";
+import { toggleSurvey } from "../../redux/appStateSlice";
+
 // Key Phrases for bot to listen for.
 const keyPhrases = {
     stopCommand:"hey alice stop",
@@ -69,6 +72,14 @@ const ChatPage = ({ chatId, setListening, initSession }) => {
 
   function startListening() {
     window.speechRecognitionObject.start();
+  }
+
+
+  const appState = useSelector((s)=>s.appState)
+  const dispatch = useDispatch()
+
+  const showSurvey = ()=> {
+    dispatch(toggleSurvey(s=> !s.surveyModalIsVisible))
   }
 
   function onResult (event) {         
@@ -313,13 +324,18 @@ const ChatPage = ({ chatId, setListening, initSession }) => {
       </div>
 
   </div>)}
+    
+  <div className="flex flex-col items-center w-full animate-pulse mt-8">
+      <ArrowDownIcon className="h-8 w-8 mt-5 mx-auto text-white animate-bounce" />
+      <button onClick={showSurvey} className="truncate w-40 chatRow">Click To Win A Reward</button>
+  </div>
 
   {!recognitionIsInitialized && (
     <div className=" ">
       <p className="mt-10 text-center text-white">
         Click the mic below to get started.
       </p>
-      <ArrowDownIcon className="h-8 w-8 mt-5 mx-auto text-white animate-bounce" />
+      {/* <ArrowDownIcon className="h-8 w-8 mt-5 mx-auto text-white animate-bounce" /> */}
       <div className="w-full flex justify-center">
         <MicrophoneIcon onClick={()=> {      
           startListening();

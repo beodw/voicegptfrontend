@@ -31,10 +31,11 @@ function App() {
         <RootLayout>
             {
               appState.surveyModalIsVisible
-              &&
-              <RegularSurvey/>
+              ?
+              <RegularSurvey/>:
+              <Page/>
             }
-            <Page/>
+          
         </RootLayout>
   );
 
