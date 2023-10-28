@@ -1,4 +1,4 @@
-import React, { useState, Fragment } from 'react'
+import React, { useState, Fragment, useRef } from 'react'
 import { retrieveCookie } from '../../lib/session';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { useDispatch } from 'react-redux';
@@ -17,6 +17,7 @@ function RegularSurvey() {
     const [isSurveyAlreadyFilled, setIsSurveyAlreadyFilled] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [furtherAdditionalThoughtsSubmitted, setFurtherAdditionalThoughtsSubmitted] = useState(false);
+    const registrationEmailRef = useRef(null)
     const dispatch = useDispatch();
     const closeSurvey = ()=>{
         dispatch(toggleSurvey(false))
@@ -78,21 +79,30 @@ function RegularSurvey() {
         });
     }
 
-    const submitFurtherFeedBack = () =>  {
-        if(furtherAdditionalThoughts.length === 0) return;
+    const submitRegistrationEmail = (e)=> {
+        const emailRegex  = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/
+        if(registrationEmailRef.current.value.length === 0) return;
+        if (!emailRegex.test(registrationEmailRef.current.value)){
+            alert("Please enter a valid email")
+            return
+        }
         const oauthCode = retrieveCookie("voiceGPTAuthToken");
-        const payLoad = {oauthCode, furtherAdditionalThoughts}
+        const payLoad = {oauthCode, registrationEmail:registrationEmailRef.current.value}
         setIsSubmitting(true)
-        fetch("https://ycwfx5u6r5bjnzvnsuv2rnpgmi0sosyb.lambda-url.eu-west-2.on.aws/ ",{method: "POST", body:JSON.stringify(payLoad)})
+         fetch("https://ycwfx5u6r5bjnzvnsuv2rnpgmi0sosyb.lambda-url.eu-west-2.on.aws/ ",{method: "POST", body:JSON.stringify(payLoad)})
          .then(r => {
             if (r.ok) r.json()
             .then(data => 
                     {
-                        if(data.status == 200) setFurtherAdditionalThoughtsSubmitted(true)
-                        if(data.status == 400) {
+                        if(data.status == 200){ 
+                            setFurtherAdditionalThoughtsSubmitted(true)
                             setIsSurveyAlreadyFilled(true)
                             setIsFormComplete(true)
                         }
+                        // if(data.status == 400) {
+                        //     setIsSurveyAlreadyFilled(true)
+                        //     setIsFormComplete(true)
+                        // }
                         setIsSubmitting(false)
                     }
             )
@@ -105,6 +115,42 @@ function RegularSurvey() {
          .catch(e => {
             console.error(e)
             alert("Could not reach endpoint for further feedback.")
+            setIsSubmitting(false)
+        });
+
+    }
+
+    const submitFurtherFeedBack = () =>  {
+        if(furtherAdditionalThoughts.length === 0) return;
+        const oauthCode = retrieveCookie("voiceGPTAuthToken");
+        const payLoad = {oauthCode, furtherAdditionalThoughts}
+        setIsSubmitting(true)
+        fetch("https://ycwfx5u6r5bjnzvnsuv2rnpgmi0sosyb.lambda-url.eu-west-2.on.aws/ ",{method: "POST", body:JSON.stringify(payLoad)})
+         .then(r => {
+            if (r.ok) r.json()
+            .then(data => 
+                    {
+                        if(data.status == 200) {
+                            setFurtherAdditionalThoughtsSubmitted(true)
+                            setIsSurveyAlreadyFilled(true)
+                            setIsFormComplete(true)
+                        }
+                        if(data.status == 400) {
+                            setIsSurveyAlreadyFilled(true)
+                            setIsFormComplete(true)
+                        }
+                        setIsSubmitting(false)
+                    }
+            )
+            .catch(e=>{
+                console.log(e)
+                alert("Could not submit registration email.")
+                setIsSubmitting(false)
+            })
+        }) 
+         .catch(e => {
+            console.error(e)
+            alert("Could not reach endpoint for submitting registration email.")
             setIsSubmitting(false)
         });
     }
@@ -149,13 +195,16 @@ function RegularSurvey() {
                 </> :
                 <>
                     <h1 className='text-gray-300 font-bold text-xs xs:text-sm md:text-lg lg:text-xl'>Stand a chance to win!</h1>
-                    <p className='text-gray-300 mt-2 text-xs xs:text-sm md:text-lg'>Congratulations! Please enter your email to registered in the draw.<br/>We will notiify you if you win!</p>
-                    <input type='email' placeholder='e.g. beodwilson@gmail.com'/>
+                    <div className='w-full px-4'>
+                        <p className='text-gray-300 mx-2 mt-2 text-xs xs:text-sm md:text-lg text-justify'>Congratulations! Please enter your email to registered in the draw. We will notify you if you win!</p>
+                        <input ref={registrationEmailRef} type='email' className='outline-none rounded-sm w-full mt-4 p-2' placeholder='e.g. yourname@gmail.com'/>
+                    </div>
+                    {/* <div className='grow'></div> */}
                     {/* <div className='rounded-lg p-2 w-1/2 border border-gray-500 flex items-center justify-center overflow-hidden mt-4'>
                         <h1 className='text-gray-300 text-xs xs:text-sm md:text-lg'>Code: SDKS787*&*SDSlksaj</h1>
                     </div> */}
-                     <button onClick={closeSurvey} className='bg-green-500 rounded-lg text-xs xs:text-sm md:text-lg lg:text-xl py-2 px-4 xs:px-6 '>
-                            {"Submit"}
+                     <button onClick={submitRegistrationEmail} className='bg-green-500 rounded-lg mt-8 text-white text-xs xs:text-sm md:text-lg lg:text-xl py-2 px-4 xs:px-6 '>
+                            { isSubmitting ? "Submitting..." : "Submit"}
                     </button>
                 </>
                 :
