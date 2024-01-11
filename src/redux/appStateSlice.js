@@ -4,18 +4,18 @@ const appState = createSlice({
   name: 'appState',
   initialState: {
     surveyModalIsVisible: false,
-    aslModalIsVisible: false,
+    recordingVideo: false,
   },
   reducers: {
     toggleSurvey: state => {
       state.surveyModalIsVisible = !state.surveyModalIsVisible;
     },
-    toggleAslModal: state => {
-      state.aslModalIsVisible = !state.aslModalIsVisible;
+    toggleAslRecording: state => {
+      state.recordingVideo = !state.recordingVideo;
     },
   },
 });
 
-export const { toggleSurvey, toggleAslModal } = appState.actions;
+export const { toggleSurvey, toggleAslRecording } = appState.actions;
 export const selectCounterValue = state => state.counter.value;
 export default appState.reducer;

@@ -1,7 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import * as tf from "@tensorflow/tfjs";
 import Webcam from "react-webcam";
-import { nextFrame } from "@tensorflow/tfjs";
 import {writeTranslation} from "../../utilities"; 
 import Message from "../chat/Message";
 
@@ -45,7 +44,6 @@ function AslModal() {
       const casted = resized.cast('int32')
       const expanded = casted.expandDims(0)
       const obj = await net.executeAsync(expanded)
-    //   console.log(obj)
 
       const boxes = await obj[1].array()
       const classes = await obj[2].array()
@@ -88,6 +86,7 @@ function AslModal() {
                         zindex: 9,
                         width: 400,
                         height: 300,
+                        display: 'none'
                     }}
                 />
             </div>

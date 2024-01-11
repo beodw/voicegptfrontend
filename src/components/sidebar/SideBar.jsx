@@ -1,16 +1,10 @@
-import ModelSelection from "./ModelSelection";
 import NewChat from "./NewChat";
-import { useDispatch, useSelector } from "react-redux";
-import { toggleSurvey, toggleAslModal } from "../../redux/appStateSlice";
 
 const SideBar = ({ showModal }) => {
 
-  const appState = useSelector((s)=>s.appState)
-  const dispatch = useDispatch()
 
-  const toggleAslModalOnClick = () => {
-    dispatch(toggleAslModal(s=> !s.aslModalIsVisible))
-  }
+
+ 
 
   return (
     <div
@@ -33,9 +27,7 @@ const SideBar = ({ showModal }) => {
             {/* <ModelSelection /> */}
      
 
-          <div onClick={toggleAslModalOnClick} className="border-gray-700 border chatRow">
-            <p>Use ASL</p>
-          </div>
+          
 
           {/* map through Chart rows*/}
           <div className="flex flex-col space-y-2 my-2">
