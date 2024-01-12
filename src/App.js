@@ -6,7 +6,6 @@ import LoginPage from './components/layout/LoginPage';
 import { retrieveCookie } from "./lib/session";
 import { useSelector } from 'react-redux';
 import RegularSurvey from './components/surveys/RegularSurvey';
-import AslModal from './components/Asl/AslModal';
 
 function App() {
   const [authCookie, setAuthCookieState] = useState(null);
@@ -32,9 +31,6 @@ function App() {
   const appComponents = (
         <RootLayout>
             {
-              appState.aslModalIsVisible ?
-              <AslModal/>
-              :
               appState.surveyModalIsVisible
               ?
               <RegularSurvey/>:

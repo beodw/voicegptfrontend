@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useRef,useState } from "react";
+import { useEffect, useState } from "react";
 import Message from "./Message";
 import { ArrowDownIcon, BoltIcon, ExclamationTriangleIcon, SunIcon } from "@heroicons/react/24/solid";
 import {MicrophoneIcon} from "@heroicons/react/24/solid";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleSurvey } from "../../redux/appStateSlice";
 import { retrieveDataFromLocalStorage, storeDataInLocalStorage } from "../../lib/session";
+import AslWebCam from "../Asl/AslWebCam";
 
 // Key Phrases for bot to listen for.
 const keyPhrases = {
@@ -20,7 +21,6 @@ var isSubmitting = false;
  * @returns {ReactComponentElement}
 */
 
-// console.table()
 var messages = JSON.parse(localStorage.getItem("voiceGPTLocalStorage")) ?? [];
 const ChatPage = ({ chatId, setListening, initSession }) => {
   const [speechText, setSpeechText] = useState("");
@@ -317,6 +317,11 @@ const ChatPage = ({ chatId, setListening, initSession }) => {
       </div>
     </div>
   )}
+
+  { 
+    appState.recordingVideo && 
+      <AslWebCam />
+  }
 
   {/* <img src="../../assets/microphone.png" /> */}
       {recognitionIsInitialized && messages.map((message, index) => {

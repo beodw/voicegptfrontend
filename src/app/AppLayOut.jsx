@@ -9,7 +9,7 @@ const AppLayOut = ({ children }) => {
   const [showModal, setShowModal] = useState(false);
 
   return (
-    <div className="flex bg-primary mx-auto max-w-screen-2xl overflow-hidden">
+    <div className="flex bg-primary mx-auto max-w-screen overflow-hidden">
       <SideBar showModal={showModal} />
 
       <main

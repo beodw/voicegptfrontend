@@ -28,7 +28,6 @@ function storeDataInLocalStorage(key, data) {
   try {
     const serializedData = JSON.stringify(data);
     localStorage.setItem(key, serializedData);
-    console.log('Data stored successfully in local storage.');
   } catch (error) {
     console.error('Error storing data in local storage:', error);
   }
