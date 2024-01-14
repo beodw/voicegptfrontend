@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Message from "./Message";
 import { ArrowDownIcon, BoltIcon, ExclamationTriangleIcon, SunIcon } from "@heroicons/react/24/solid";
 import {MicrophoneIcon} from "@heroicons/react/24/solid";
 import { useDispatch, useSelector } from "react-redux";
-import { toggleSurvey } from "../../redux/appStateSlice";
+import { toggleSurvey, toggleVoiceRecording } from "../../redux/appStateSlice";
 import { retrieveDataFromLocalStorage, storeDataInLocalStorage } from "../../lib/session";
 import AslWebCam from "../Asl/AslWebCam";
 
@@ -25,34 +25,34 @@ var messages = JSON.parse(localStorage.getItem("voiceGPTLocalStorage")) ?? [];
 const ChatPage = ({ chatId, setListening, initSession }) => {
   const [speechText, setSpeechText] = useState("");
   let [_, setIsSubmitting] = useState(false);
-  const [isReading, setIsReading] = useState(false);
-  const [userInteracted, setUserInteracted] = useState(false);
+  // eslint-disable-next-line
   const [__, setMessages] = useState([])
+  // eslint-disable-next-line
   let [audioContext, setAudioContext] = useState(false);
   const [sessionStarted, setSessionStarted] = useState(false);
   
   const [recognitionIsInitialized, setRecognitionIsInitialized] = useState(false)
 
   const [isFirstVisit, setIsFirstVisit] = useState(true)
+
+  const appState = useSelector((s)=>s.appState)
+  const dispatch = useDispatch()
   
   useEffect(() => {
     const isFirstVisit = retrieveDataFromLocalStorage("isFirstVisit")
     setIsFirstVisit(isFirstVisit ?? true)
-  })
+  }, [])
 
-  function startListening() {
+  const startListening = useCallback(() => {
     window.speechRecognitionObject.start();
-  }
-
-
-  const appState = useSelector((s)=>s.appState)
-  const dispatch = useDispatch()
+    dispatch(toggleVoiceRecording(s=>!s.recordingAudio));
+  }, [dispatch])
 
   const showSurvey = ()=> {
     dispatch(toggleSurvey(s=> !s.surveyModalIsVisible))
   }
 
-  function onResult (event) {         
+  const onResult = useCallback((event) => {         
               const speechRecognitionResults = Array.from(event.results);
               
               // Check if recognition is finished
@@ -65,7 +65,7 @@ const ChatPage = ({ chatId, setListening, initSession }) => {
               let lastDetectedText = transcript.at(-1);
 
               // Check if the stopCommand is detected
-              if (lastDetectedText.toLocaleLowerCase().trim() == keyPhrases.stopCommand) {
+              if (lastDetectedText.toLocaleLowerCase().trim() === keyPhrases.stopCommand) {
                 // find a way to stop audio with voice will speech synthesis is playing
                 // if(audioContext) return audioContext.stop();s
                 return; // stopReading();
@@ -73,7 +73,7 @@ const ChatPage = ({ chatId, setListening, initSession }) => {
 
               if(isSubmitting) return; 
               // Check if the stopCommand is detected
-              if (!lastDetectedText.toLocaleLowerCase().trim() == keyPhrases.startCommand) {
+              if (!lastDetectedText.toLocaleLowerCase().trim() === keyPhrases.startCommand) {
                   setSpeechText("How can you help me?")
                 return;
               }
@@ -94,39 +94,64 @@ const ChatPage = ({ chatId, setListening, initSession }) => {
               setIsSubmitting(true)
 
               isSubmitting = true;
-    };
+    }, [setListening]);
 
   useEffect(() => {
-    if(!recognitionIsInitialized){
-      window.speechRecognitionObject = (new (window.SpeechRecognition ||
-                                                    window.webkitSpeechRecognition)())
-      window.speechRecognitionObject.onstart = () => {
-            // console.log("Listening...");
-      };
+      if(!recognitionIsInitialized){
+        window.speechRecognitionObject = (new (window.SpeechRecognition ||
+                                                      window.webkitSpeechRecognition)())
+        window.speechRecognitionObject.onstart = () => {
+              // console.log("Listening...");
+        };
 
-      window.speechRecognitionObject.interimResults = true;
-      window.speechRecognitionObject.continuous = false;
-      window.speechRecognitionObject.lang = "en-US";
+        window.speechRecognitionObject.interimResults = true;
+        window.speechRecognitionObject.continuous = false;
+        window.speechRecognitionObject.lang = "en-US";
 
-      window.speechRecognitionObject.onend = () => {
-        // console.log("Recognition ended.");
-        startListening();
-      };
+        window.speechRecognitionObject.onend = () => {
+          // console.log("Recognition ended.");
+          startListening();
+        };
 
-      window.speechRecognitionObject.onerror = (event) => {
-        // Find better way to handle errors.
-        // console.error("Error occurred in recognition: ", event.error);
-      };
+        window.speechRecognitionObject.onerror = (event) => {
+          // Find better way to handle errors.
+          // console.error("Error occurred in recognition: ", event.error);
+        };
 
-      window.speechRecognitionObject.onresult = onResult;
+        window.speechRecognitionObject.onresult = onResult;
 
-  }
+    }
 
-  }, [recognitionIsInitialized]);
+  }, [recognitionIsInitialized, onResult, startListening]);
 
+  const init = useCallback(() => {
+      if (!window.AudioContext) {
+          if (!window.webkitAudioContext) {
+              alert("Your browser does not support any AudioContext and cannot play back the response!.");
+              return;
+          }
+              window.AudioContext = window.webkitAudioContext;
+          }
+          audioContext = new AudioContext();
+          return audioContext;
+    },[])
+
+
+  const playByteArray =  useCallback( (byteArray, context) => {
+    var arrayBuffer = new ArrayBuffer(byteArray.length);
+    var bufferView = new Uint8Array(arrayBuffer);
+    for (let i = 0; i < byteArray.length; i++) {
+      bufferView[i] = byteArray[i];
+    }
+    var source = context.createBufferSource();
+    context.decodeAudioData(arrayBuffer, function(buffer) {
+        source = play(buffer, source, context);
+    });
+    return source;
+  },  []);
 
   useEffect(() => {
-        if(speechText.trim().length == 0) return;
+        if(speechText.trim().length === 0) return;
         submitText({prompt:speechText}).then((res) => {
             setSpeechText("");
             if(!res){
@@ -135,7 +160,7 @@ const ChatPage = ({ chatId, setListening, initSession }) => {
               alert("Check your internet connection");
               return;
             }
-            if(res.status  == 504) {
+            if(res.status  === 504) {
                 const errorMessage = "Could not reach service at the moment. Try entering or saying something else";
                 alert(errorMessage);
                 setIsSubmitting(false);
@@ -143,7 +168,7 @@ const ChatPage = ({ chatId, setListening, initSession }) => {
                 return;
             }
             res.json().then(((r) => {
-              if(res.status == 500){
+              if(res.status === 500){
                 const errorMessage = "Well this is embrassing! Server ran into an issue :(";
                 alert(errorMessage);
                 setMessages([...messages, {isChatGpt: true, text:'Could not get a response from server :('}])
@@ -162,7 +187,7 @@ const ChatPage = ({ chatId, setListening, initSession }) => {
         });
         
 
-  }, [_])
+  }, [_,init,playByteArray, speechText, isSubmitting])
 
   const submitText = (data) => fetch('https://hiss7jkohg254p62dmmjilppia0gzbrb.lambda-url.eu-west-2.on.aws/',{
       method: 'POST',
@@ -174,34 +199,6 @@ const ChatPage = ({ chatId, setListening, initSession }) => {
       body: JSON.stringify(data),
   }).catch((error) => {console.error(error)});
 
-
-
-    function init() {
-      if (!window.AudioContext) {
-          if (!window.webkitAudioContext) {
-              alert("Your browser does not support any AudioContext and cannot play back this audio.");
-              return;
-          }
-              window.AudioContext = window.webkitAudioContext;
-          }
-
-          audioContext = new AudioContext();
-          return audioContext;
-    }
-
-  function playByteArray(byteArray,  context) {
-      var arrayBuffer = new ArrayBuffer(byteArray.length);
-      var bufferView = new Uint8Array(arrayBuffer);
-      for (let i = 0; i < byteArray.length; i++) {
-        bufferView[i] = byteArray[i];
-      }
-      var source = context.createBufferSource();
-      context.decodeAudioData(arrayBuffer, function(buffer) {
-          source = play(buffer, source, context);
-      });
-      return source;
-  }
-
   // Play the loaded file
   function play(buf, source, context) {
       source.buffer = buf;
@@ -212,7 +209,6 @@ const ChatPage = ({ chatId, setListening, initSession }) => {
       return source;
   }
 
-
   function saveToLocalStorage(msgs){
     // const conversationHistory = localStorage.getItem("voiceGPTLocalStorage");
     // if(!conversationHistory)
@@ -221,8 +217,6 @@ const ChatPage = ({ chatId, setListening, initSession }) => {
 
     // console.log(conversationHistory);
   }
-
-
 
   return (
     <div
@@ -320,7 +314,7 @@ const ChatPage = ({ chatId, setListening, initSession }) => {
 
   { 
     appState.recordingVideo && 
-      <AslWebCam />
+      <AslWebCam setMessages={setMessages}/>
   }
 
   {/* <img src="../../assets/microphone.png" /> */}
@@ -332,9 +326,9 @@ const ChatPage = ({ chatId, setListening, initSession }) => {
             isChatGpt={message.isChatGpt}
             // chatRef={chatPageRef}
             sessionStarted={sessionStarted}
-            isLastMessage={index == messages.length - 1
-              // index + 1 === messages.docs.length &&
-              // message.data().user.avatar === "ChatGptIcon" &&
+            isLastMessage={index === messages.length - 1
+              // index + 1 ==== messages.docs.length &&
+              // message.data().user.avatar ==== "ChatGptIcon" &&
               // isMessageNew(message.data().createdAt)
             }
           />

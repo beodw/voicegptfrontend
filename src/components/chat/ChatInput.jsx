@@ -1,107 +1,27 @@
 "use client";
 
-import useSWR from "swr";
-import { MicrophoneIcon, PaperAirplaneIcon } from "@heroicons/react/24/solid";
-// import { serverTimestamp } from "firebase/firestore";
-// import { useSession } from "next-auth/react";
-import React, { FormEvent, useEffect, useRef, useState } from "react";
-// import { addMessage } from "../../lib/firebase";
-import toast from "react-hot-toast";
+import { MicrophoneIcon } from "@heroicons/react/24/solid";
+import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { toggleAslRecording } from "../../redux/appStateSlice";
-// import query from "../../lib/api/query";
+import { toggleAslRecording, toggleVoiceRecording, toggleModality } from "../../redux/appStateSlice";
 
 
 const ChatInput = ({ listening }) => {
-  // const [prompt, setPrompt] = useState("");
-  // const { data: session } = useSession();
-  // const { data: model, mutate: setModel } = useSWR("model", {
-  //   fallbackData: "text-davinci-003",
-  // });
-  // const formInputRef = useRef<null | HTMLDivElement>(null);
-
-  // async function sendMessage(e: FormEvent) {
-  //   e.preventDefault();
-  //   const input = prompt.trim();
-  //   if (!input) return;
-
-  //   const userMessage: Message = {
-  //     text: input,
-  //     createdAt: serverTimestamp(),
-  //     user: {
-  //       _id: session?.user?.email!,
-  //       name: session?.user?.name!,
-  //       avatar:
-  //         session?.user?.image! ||
-  //         `https://ui-avatars.com/api/?name=${session?.user?.name}`,
-  //     },
-  //   };
-
-  //   let notification: string;
-
-  //   try {
-  //     notification = toast.loading("Clone is asking ChatGPT");
-
-  //     await addMessage(session?.user?.email!, chatId, userMessage);
-
-  //     setPrompt("");
-  //     /*
-  //   //   ASSUMING WE WERE USING THE ASK QUSTION API ROUTTE. we didnt use the api because vercel edge function kept timing out at 10secs
-  //     const response = await fetch("/api/askQuestion", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({
-  //         prompt: input,
-  //         chatId,
-  //         model,
-  //         session,
-  //       }),
-  //     });
-  //    const data = await response.json();
-  //    const text = data.answer
-  //      */
-
-  //     const text = await query(input, model);
-  //     const gptMessage: Message = {
-  //       text: text!,
-  //       createdAt: serverTimestamp(),
-  //       user: {
-  //         _id: "ChatGPT",
-  //         name: "ChatGPT",
-  //         avatar: "ChatGptIcon",
-  //       },
-  //     };
-
-  //     await addMessage(session?.user?.email!, chatId, gptMessage);
-
-  //     toast.success("ChatGPT just replied clone", {
-  //       id: notification!,
-  //     });
-  //   } catch (error) {
-  //     toast.error("Unexpected error", {
-  //       id: notification!,
-  //     });
-  //   }
-  // }
-
-  // useEffect(() => {
-  //   if (formInputRef.current) {
-  //     formInputRef.current.scrollIntoView({
-  //       behavior: "smooth",
-  //       inline: "nearest",
-  //       block: "end",
-  //     });
-  //   }
-  // }, [formInputRef.current]);
-
 
   const appState = useSelector((s)=>s.appState)
   const dispatch = useDispatch()
 
-  const toggleAslRecordingOnClick = () => {
-    dispatch(toggleAslRecording(s=> !s.recordingVideo))
+  const toggleModalityInput = () => {
+    // Stop listening for speech when switching to sign language
+    // if(appState.recordingAudio) { window.speechRecognitionObject =  {}; }
+    // else{
+    //   if(!window.speechRecognitionObject.listening) {
+    //     window.speechRecognitionObject = (new (window.SpeechRecognition || window.webkitSpeechRecognition)())
+    //     window.speechRecognitionObject.start();
+    //   }
+    // }
+    dispatch(toggleAslRecording(s=>!s.recordingVideo));
+    dispatch(toggleVoiceRecording(s=>!s.recordingAudio));
   }
 
   return (
@@ -116,12 +36,14 @@ const ChatInput = ({ listening }) => {
       >
         
            
-      <div onClick={toggleAslRecordingOnClick} className="border-gray-700 border chatRow">
-          <p>Use {appState.recordingVideo ? 'Voice': 'ASL'}</p>
+      <div onClick={toggleModalityInput} className="border-gray-700 border chatRow">
+          <p>Use {appState.recordingVideo ? 'Voice': 'Sign Lang'}</p>
       </div>
       {
         appState.recordingVideo ?
-              <textarea id='translated-asl-textarea' />
+              <div onClick={()=>{}} className="border-gray-700 border chatRow">
+                  <p>{'Submit Translation'}</p>
+              </div>
               :
               <p
               className="flex"

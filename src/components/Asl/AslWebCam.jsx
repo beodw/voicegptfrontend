@@ -1,13 +1,15 @@
-import React, {useRef, useEffect } from 'react'
+import React, {useRef, useEffect, useState } from 'react'
 import Webcam from 'react-webcam';
 import * as tf from "@tensorflow/tfjs";
 import { writeTranslation } from '../../utilities';
 import { useSelector } from "react-redux";
 
-
-function AslWebCam() {
+var messages = JSON.parse(localStorage.getItem("voiceGPTLocalStorage")) ?? [];
+var textTranslatedSoFar = "";
+function AslWebCam({setMessages}) {
   const webcamRef = useRef(null);
   let aslToTextContainer = null;
+  // const [textTranslatedSoFar, setTextTranslatedSoFar] = useState('');
 
   const appState = useSelector((s)=>s.appState)
 
@@ -53,9 +55,25 @@ function AslWebCam() {
 
 
       const translatedText = writeTranslation(boxes[0], classes[0], scores[0], 0.8, aslToTextContainer);
-      console.log(aslToTextContainer,translatedText);
       
-      if (translatedText) aslToTextContainer.innerHTML =  aslToTextContainer.innerHTML + " " + translatedText;
+      if (translatedText){
+        if(textTranslatedSoFar.length > 0){
+            setMessages([...messages.slice(0, -1), {text: textTranslatedSoFar + ' ' + translatedText, isUser: true}]);
+            // setTextTranslatedSoFar(textTranslatedSoFar + ' ' + translatedText);
+            messages = [...messages.slice(0, -1), {text: textTranslatedSoFar + ' ' + translatedText, isUser: true}];
+            console.log('Continuing transcription');
+        }
+        else{
+          // Create new message for transcribed text
+            setMessages([...messages, {text: translatedText, isUser: true}]);
+            // setTextTranslatedSoFar(translatedText);
+            textTranslatedSoFar = translatedText;
+            console.log(textTranslatedSoFar, translatedText);
+            messages = [...messages, {text: translatedText, isUser: true}];
+            console.log('New Transcription');
+        }
+      }
+
 
       tf.dispose(img)
       tf.dispose(resized)
@@ -69,10 +87,6 @@ function AslWebCam() {
   useEffect(()=>{runCoco(); 
     setTimeout(()=> document.getElementById('webcam-footage-container').classList.add('-translate-x-full'), 200); 
 },[]);
-
-  useEffect(()=>{
-   aslToTextContainer = document.getElementById('translated-asl-textarea');
-  },[appState.recordingVideo]);
 
 
   return (
