@@ -8,6 +8,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { toggleSurvey, toggleVoiceRecording } from "../../redux/appStateSlice";
 import { retrieveDataFromLocalStorage, storeDataInLocalStorage } from "../../lib/session";
 import AslWebCam from "../Asl/AslWebCam";
+import { setMessages } from "../../redux/appStateSlice";
+import { getMessagesFromLocalStorage } from "../../utilities";
+import { submitText } from "../../utilities";
 
 // Key Phrases for bot to listen for.
 const keyPhrases = {
@@ -21,12 +24,13 @@ var isSubmitting = false;
  * @returns {ReactComponentElement}
 */
 
-var messages = JSON.parse(localStorage.getItem("voiceGPTLocalStorage")) ?? [];
+// var messages = JSON.parse(localStorage.getItem("voiceGPTLocalStorage")) ?? [];
 const ChatPage = ({ chatId, setListening, initSession }) => {
+  const messages = useSelector(s=>s.appState.messages);
   const [speechText, setSpeechText] = useState("");
   let [_, setIsSubmitting] = useState(false);
   // eslint-disable-next-line
-  const [__, setMessages] = useState([])
+  const [__, setMessagesState] = useState([])
   // eslint-disable-next-line
   let [audioContext, setAudioContext] = useState(false);
   const [sessionStarted, setSessionStarted] = useState(false);
@@ -37,6 +41,10 @@ const ChatPage = ({ chatId, setListening, initSession }) => {
 
   const appState = useSelector((s)=>s.appState)
   const dispatch = useDispatch()
+
+  useEffect(()=>{
+    console.log("I changed", messages);
+  },[messages]);
   
   useEffect(() => {
     const isFirstVisit = retrieveDataFromLocalStorage("isFirstVisit")
@@ -85,12 +93,11 @@ const ChatPage = ({ chatId, setListening, initSession }) => {
 
               // Check if currently reading text.
               // if(isReading) return;
-              // Populate input field with detected text.
-              // setSpeechText(lastDetectedText)
-              
+
+              // Hack to work around message being an empty [] due to closure :(.
+              let messagesList = getMessagesFromLocalStorage();
               // trigger submission of text
-              setMessages([...messages, {isChatGpt:false, text:lastDetectedText}])
-              messages = [...messages, {isChatGpt:false, text:lastDetectedText}]
+              dispatch(setMessages([...messagesList, {isChatGpt:false, text:lastDetectedText}]));
               setIsSubmitting(true)
 
               isSubmitting = true;
@@ -171,16 +178,15 @@ const ChatPage = ({ chatId, setListening, initSession }) => {
               if(res.status === 500){
                 const errorMessage = "Well this is embrassing! Server ran into an issue :(";
                 alert(errorMessage);
-                setMessages([...messages, {isChatGpt: true, text:'Could not get a response from server :('}])
+                // dispatch(setMessages([...messages, {isChatGpt: true, text:'Could not get a response from server :('}]));
                 setIsSubmitting(false);
                 isSubmitting = false;
                 return;
               }
               let gptResponseText = r.message.choices[0].message.content;
-              setMessages([...messages, {isChatGpt: true, text:gptResponseText}])
-              messages = [...messages, {isChatGpt:true, text:gptResponseText}]
+              dispatch(setMessages([...messages, {isChatGpt: true, text:gptResponseText}]));
+              // messages = [...messages, {isChatGpt:true, text:gptResponseText}]
               // document.getElementById("response").innerText = r.message.choices[0].message.content;
-              saveToLocalStorage(messages);
               let audioSource = playByteArray(r.audio.data, init());
               audioSource.addEventListener('ended', () => {setTimeout(() => {isSubmitting = false; setListening(false);}, 2000); setIsSubmitting(false);});
             }));
@@ -188,16 +194,6 @@ const ChatPage = ({ chatId, setListening, initSession }) => {
         
 
   }, [_,init,playByteArray, speechText, isSubmitting])
-
-  const submitText = (data) => fetch('https://hiss7jkohg254p62dmmjilppia0gzbrb.lambda-url.eu-west-2.on.aws/',{
-      method: 'POST',
-      mode: 'cors',
-      headers: {
-        'Content-Type': 'application/json',
-        'Acccept': '*/*'
-      },
-      body: JSON.stringify(data),
-  }).catch((error) => {console.error(error)});
 
   // Play the loaded file
   function play(buf, source, context) {
@@ -209,14 +205,6 @@ const ChatPage = ({ chatId, setListening, initSession }) => {
       return source;
   }
 
-  function saveToLocalStorage(msgs){
-    // const conversationHistory = localStorage.getItem("voiceGPTLocalStorage");
-    // if(!conversationHistory)
-    localStorage.setItem("voiceGPTLocalStorage", JSON.stringify([]))
-    localStorage.setItem("voiceGPTLocalStorage", JSON.stringify([...msgs]))
-
-    // console.log(conversationHistory);
-  }
 
   return (
     <div
@@ -314,7 +302,7 @@ const ChatPage = ({ chatId, setListening, initSession }) => {
 
   { 
     appState.recordingVideo && 
-      <AslWebCam setMessages={setMessages}/>
+      <AslWebCam />
   }
 
   {/* <img src="../../assets/microphone.png" /> */}

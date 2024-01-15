@@ -17,8 +17,7 @@ const Message = ({ message, isChatGpt, isLastMessage, sessionStarted}) => {
   // Typing Effect
   function typeEffect(text, delay) {
 
-      let i = 0;
-      console.log("sessionStarted =>", sessionStarted);
+    let i = 0;
     if(isLastMessage && sessionStarted){
         const typeInterval = setInterval(() => {
 

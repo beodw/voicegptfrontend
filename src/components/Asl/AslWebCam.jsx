@@ -1,15 +1,38 @@
-import React, {useRef, useEffect, useState } from 'react'
+import React, {useRef, useEffect, useState, useCallback } from 'react'
 import Webcam from 'react-webcam';
 import * as tf from "@tensorflow/tfjs";
-import { writeTranslation } from '../../utilities';
-import { useSelector } from "react-redux";
+import { getMessagesFromLocalStorage, writeTranslation } from '../../utilities';
+import { useDispatch, useSelector } from "react-redux";
+import { setMessages, setTranslatedSignText} from '../../redux/appStateSlice';
 
-var messages = JSON.parse(localStorage.getItem("voiceGPTLocalStorage")) ?? [];
-var textTranslatedSoFar = "";
-function AslWebCam({setMessages}) {
+var textTranslatedSoFar = '';
+
+function AslWebCam() {
+  const messages = useSelector(s=>s.appState.messages); 
+  const dispatch = useDispatch();
   const webcamRef = useRef(null);
   let aslToTextContainer = null;
-  // const [textTranslatedSoFar, setTextTranslatedSoFar] = useState('');
+  const [newMessage, setNewMessage] = useState('');
+
+  const addNewMessage = (newMessage) => {
+    dispatch(setMessages([...messages, {isChatGpt: false, text:newMessage}]));
+  }
+  const updateNewMessage = (newMessage) => {
+      dispatch(setMessages([...messages.slice(0, -1), {isChatGpt: false, text:newMessage}]));
+  }
+
+  const setTextTranslatedSoFar = (textTranslatedSoFar) => {
+    dispatch(setTranslatedSignText(textTranslatedSoFar));
+  }
+
+  // Remove last message if translated text is ''.
+  useEffect(() => {
+    return() => {
+      if(appState.translatedSignText.length === 0) return;
+      const msgs = getMessagesFromLocalStorage();
+      dispatch(setMessages([...msgs.slice(0, -1)]));
+    }
+  }, []);
 
   const appState = useSelector((s)=>s.appState)
 
@@ -26,7 +49,7 @@ function AslWebCam({setMessages}) {
     }, 16.7);
   };
 
-  const detect = async (net) => {
+  const detect = useCallback(async (net) => {
     // Check data is available
     if (
       typeof webcamRef.current !== "undefined" &&
@@ -55,25 +78,21 @@ function AslWebCam({setMessages}) {
 
 
       const translatedText = writeTranslation(boxes[0], classes[0], scores[0], 0.8, aslToTextContainer);
-      
+
       if (translatedText){
         if(textTranslatedSoFar.length > 0){
-            setMessages([...messages.slice(0, -1), {text: textTranslatedSoFar + ' ' + translatedText, isUser: true}]);
-            // setTextTranslatedSoFar(textTranslatedSoFar + ' ' + translatedText);
-            messages = [...messages.slice(0, -1), {text: textTranslatedSoFar + ' ' + translatedText, isUser: true}];
-            console.log('Continuing transcription');
+            textTranslatedSoFar = textTranslatedSoFar + ' ' + translatedText;
+            setTextTranslatedSoFar(textTranslatedSoFar);
+            updateNewMessage(textTranslatedSoFar);
         }
         else{
-          // Create new message for transcribed text
-            setMessages([...messages, {text: translatedText, isUser: true}]);
-            // setTextTranslatedSoFar(translatedText);
+            // Create new message for transcribed text
             textTranslatedSoFar = translatedText;
-            console.log(textTranslatedSoFar, translatedText);
-            messages = [...messages, {text: translatedText, isUser: true}];
-            console.log('New Transcription');
+            setTextTranslatedSoFar(textTranslatedSoFar);
+            addNewMessage(textTranslatedSoFar);
+
         }
       }
-
 
       tf.dispose(img)
       tf.dispose(resized)
@@ -82,11 +101,49 @@ function AslWebCam({setMessages}) {
       tf.dispose(obj)
 
     }
-  };
+  }, [textTranslatedSoFar]);
 
   useEffect(()=>{runCoco(); 
     setTimeout(()=> document.getElementById('webcam-footage-container').classList.add('-translate-x-full'), 200); 
 },[]);
+
+// useEffect(() => {
+//         if(speechText.trim().length === 0) return;
+//         submitText({prompt:speechText}).then((res) => {
+//             setSpeechText("");
+//             if(!res){
+//               setIsSubmitting(false);
+//               isSubmitting = false;
+//               alert("Check your internet connection");
+//               return;
+//             }
+//             if(res.status  === 504) {
+//                 const errorMessage = "Could not reach service at the moment. Try entering or saying something else";
+//                 alert(errorMessage);
+//                 setIsSubmitting(false);
+//                 isSubmitting = false;
+//                 return;
+//             }
+//             res.json().then(((r) => {
+//               if(res.status === 500){
+//                 const errorMessage = "Well this is embrassing! Server ran into an issue :(";
+//                 alert(errorMessage);
+//                 setMessages([...messages, {isChatGpt: true, text:'Could not get a response from server :('}])
+//                 setIsSubmitting(false);
+//                 isSubmitting = false;
+//                 return;
+//               }
+//               let gptResponseText = r.message.choices[0].message.content;
+//               setMessages([...messages, {isChatGpt: true, text:gptResponseText}])
+//               messages = [...messages, {isChatGpt:true, text:gptResponseText}]
+//               // document.getElementById("response").innerText = r.message.choices[0].message.content;
+//               saveToLocalStorage(messages);
+//               let audioSource = playByteArray(r.audio.data, init());
+//               audioSource.addEventListener('ended', () => {setTimeout(() => {isSubmitting = false; setListening(false);}, 2000); setIsSubmitting(false);});
+//             }));
+//         });
+
+//   }, [isSubmitting, messages])
 
 
   return (

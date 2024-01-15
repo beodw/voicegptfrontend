@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
+import { saveToLocalStorage } from '../utilities';
 
 const appState = createSlice({
   name: 'appState',
@@ -6,6 +7,8 @@ const appState = createSlice({
     surveyModalIsVisible: false,
     recordingVideo: false,
     recordingAudio: false,
+    messages: [],
+    translatedSignText: '',
   },
   reducers: {
     toggleSurvey: state => {
@@ -16,10 +19,17 @@ const appState = createSlice({
     },
     toggleVoiceRecording: state => {
       state.recordingAudio = !state.recordingAudio;
+    },
+    setMessages: (state, action) => {
+      state.messages = action.payload;
+      saveToLocalStorage(state.messages);
+    },
+    setTranslatedSignText: (state, action) => {
+      state.translatedSignText = action.payload;
     }
   },
 });
 
-export const { toggleSurvey, toggleAslRecording, toggleVoiceRecording, toggleModality } = appState.actions;
+export const { toggleSurvey, toggleAslRecording, toggleVoiceRecording, setMessages, setTranslatedSignText } = appState.actions;
 export const selectCounterValue = state => state.counter.value;
 export default appState.reducer;

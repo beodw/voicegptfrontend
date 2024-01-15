@@ -18,3 +18,20 @@ export const writeTranslation = (boxes, classes, scores, threshold, aslToTextRef
         }
     }
 }
+
+export const submitText = (data) => fetch('https://hiss7jkohg254p62dmmjilppia0gzbrb.lambda-url.eu-west-2.on.aws/',{
+      method: 'POST',
+      mode: 'cors',
+      headers: {
+        'Content-Type': 'application/json',
+        'Acccept': '*/*'
+      },
+      body: JSON.stringify(data),
+  }).catch((error) => {console.error(error)});
+
+export const getMessagesFromLocalStorage = () => JSON.parse(localStorage.getItem("voiceGPTLocalStorage")) ?? [];
+
+export function saveToLocalStorage(msgs){
+    localStorage.setItem("voiceGPTLocalStorage", JSON.stringify([]))
+    localStorage.setItem("voiceGPTLocalStorage", JSON.stringify([...msgs]))
+}
