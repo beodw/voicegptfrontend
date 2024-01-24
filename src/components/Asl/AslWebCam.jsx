@@ -18,7 +18,8 @@ function AslWebCam() {
     dispatch(setMessages([...messages, {isChatGpt: false, text:newMessage}]));
   }
   const updateNewMessage = (newMessage) => {
-      dispatch(setMessages([...messages.slice(0, -1), {isChatGpt: false, text:newMessage}]));
+    console.log("updated", [...messages.slice(0, -1), {isChatGpt:false, text: newMessage} ]);
+    dispatch(setMessages([...messages.slice(0, -1), {isChatGpt:false, text: newMessage} ]));
   }
 
   const setTextTranslatedSoFar = (textTranslatedSoFar) => {

@@ -26,6 +26,7 @@ var isSubmitting = false;
 
 // var messages = JSON.parse(localStorage.getItem("voiceGPTLocalStorage")) ?? [];
 const ChatPage = ({ chatId, setListening, initSession }) => {
+  const [test, setTest] = useState([]);
   const messages = useSelector(s=>s.appState.messages);
   const [speechText, setSpeechText] = useState("");
   let [_, setIsSubmitting] = useState(false);
@@ -44,6 +45,7 @@ const ChatPage = ({ chatId, setListening, initSession }) => {
 
   useEffect(()=>{
     console.log("I changed", messages);
+    setTest([...messages]);
   },[messages]);
   
   useEffect(() => {
@@ -306,11 +308,12 @@ const ChatPage = ({ chatId, setListening, initSession }) => {
   }
 
   {/* <img src="../../assets/microphone.png" /> */}
-      {recognitionIsInitialized && messages.map((message, index) => {
+  { test.length }
+      {recognitionIsInitialized && test.map((message, index) => {
         return (
           <Message
             key={index}
-            message={message.text}
+            message={test.at(-1).text}
             isChatGpt={message.isChatGpt}
             // chatRef={chatPageRef}
             sessionStarted={sessionStarted}
