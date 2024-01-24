@@ -42,11 +42,6 @@ const ChatPage = ({ chatId, setListening, initSession }) => {
 
   const appState = useSelector((s)=>s.appState)
   const dispatch = useDispatch()
-
-  useEffect(()=>{
-    console.log("I changed", messages);
-    setTest([...messages]);
-  },[messages]);
   
   useEffect(() => {
     const isFirstVisit = retrieveDataFromLocalStorage("isFirstVisit")
@@ -307,20 +302,14 @@ const ChatPage = ({ chatId, setListening, initSession }) => {
       <AslWebCam />
   }
 
-  {/* <img src="../../assets/microphone.png" /> */}
-  { test.length }
-      {recognitionIsInitialized && test.map((message, index) => {
+      {recognitionIsInitialized && messages.map((message, index) => {
         return (
           <Message
             key={index}
-            message={test.at(-1).text}
+            message={message.text}
             isChatGpt={message.isChatGpt}
-            // chatRef={chatPageRef}
             sessionStarted={sessionStarted}
             isLastMessage={index === messages.length - 1
-              // index + 1 ==== messages.docs.length &&
-              // message.data().user.avatar ==== "ChatGptIcon" &&
-              // isMessageNew(message.data().createdAt)
             }
           />
         );

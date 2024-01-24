@@ -1,7 +1,7 @@
-import React, {useRef, useEffect, useState, useCallback } from 'react'
+import React, {useRef, useEffect, useCallback } from 'react'
 import Webcam from 'react-webcam';
 import * as tf from "@tensorflow/tfjs";
-import { getMessagesFromLocalStorage, writeTranslation } from '../../utilities';
+import { getMessagesFromLocalStorage, writeTranslation} from '../../utilities';
 import { useDispatch, useSelector } from "react-redux";
 import { setMessages, setTranslatedSignText} from '../../redux/appStateSlice';
 
@@ -12,14 +12,12 @@ function AslWebCam() {
   const dispatch = useDispatch();
   const webcamRef = useRef(null);
   let aslToTextContainer = null;
-  const [newMessage, setNewMessage] = useState('');
 
   const addNewMessage = (newMessage) => {
-    dispatch(setMessages([...messages, {isChatGpt: false, text:newMessage}]));
+     dispatch(setMessages([...messages, {isChatGpt:false, text: newMessage} ]));
   }
   const updateNewMessage = (newMessage) => {
-    console.log("updated", [...messages.slice(0, -1), {isChatGpt:false, text: newMessage} ]);
-    dispatch(setMessages([...messages.slice(0, -1), {isChatGpt:false, text: newMessage} ]));
+    dispatch(setMessages([...messages, {isChatGpt:false, text: newMessage} ]));
   }
 
   const setTextTranslatedSoFar = (textTranslatedSoFar) => {
@@ -29,6 +27,7 @@ function AslWebCam() {
   // Remove last message if translated text is ''.
   useEffect(() => {
     return() => {
+      alert(appState.translatedSignText.length);
       if(appState.translatedSignText.length === 0) return;
       const msgs = getMessagesFromLocalStorage();
       dispatch(setMessages([...msgs.slice(0, -1)]));
@@ -47,7 +46,7 @@ function AslWebCam() {
     //  Loop and detect hands
     setInterval(() => {
       detect(net);
-    }, 16.7);
+    }, 16.7 * 100);
   };
 
   const detect = useCallback(async (net) => {

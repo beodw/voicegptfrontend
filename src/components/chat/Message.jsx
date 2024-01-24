@@ -12,7 +12,7 @@ const Message = ({ message, isChatGpt, isLastMessage, sessionStarted}) => {
 
   useEffect(()=>{
     typeEffect(message, 25);
-  },[]);
+  },[message]);
 
   // Typing Effect
   function typeEffect(text, delay) {
