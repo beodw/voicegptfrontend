@@ -1,11 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Message from "./Message";
 import { ArrowDownIcon, BoltIcon, ExclamationTriangleIcon, SunIcon } from "@heroicons/react/24/solid";
 import {MicrophoneIcon} from "@heroicons/react/24/solid";
 import { useDispatch, useSelector } from "react-redux";
-import { toggleSurvey, toggleVoiceRecording } from "../../redux/appStateSlice";
+import { toggleSurvey, toggleVoiceRecording, setSubmittingPrompt } from "../../redux/appStateSlice";
 import { retrieveDataFromLocalStorage, storeDataInLocalStorage } from "../../lib/session";
 import AslWebCam from "../Asl/AslWebCam";
 import { setMessages } from "../../redux/appStateSlice";
@@ -25,11 +25,10 @@ var isSubmitting = false;
 */
 
 // var messages = JSON.parse(localStorage.getItem("voiceGPTLocalStorage")) ?? [];
-const ChatPage = ({ chatId, setListening, initSession }) => {
-  const [test, setTest] = useState([]);
+const ChatPage = ({ chatId, setListening, initSession, submittingAsl }) => {
   const messages = useSelector(s=>s.appState.messages);
   const [speechText, setSpeechText] = useState("");
-  let [_, setIsSubmitting] = useState(false);
+  let [_, setSubmittingPromptn] = useState(false);
   // eslint-disable-next-line
   const [__, setMessagesState] = useState([])
   // eslint-disable-next-line
@@ -57,7 +56,7 @@ const ChatPage = ({ chatId, setListening, initSession }) => {
     dispatch(toggleSurvey(s=> !s.surveyModalIsVisible))
   }
 
-  const onResult = useCallback((event) => {         
+  const onResult = useCallback((event) => {  
               const speechRecognitionResults = Array.from(event.results);
               
               // Check if recognition is finished
@@ -95,10 +94,10 @@ const ChatPage = ({ chatId, setListening, initSession }) => {
               let messagesList = getMessagesFromLocalStorage();
               // trigger submission of text
               dispatch(setMessages([...messagesList, {isChatGpt:false, text:lastDetectedText}]));
-              setIsSubmitting(true)
+              setSubmittingPrompt(true)
 
               isSubmitting = true;
-    }, [setListening]);
+    },[setListening, setSubmittingPrompt]);
 
   useEffect(() => {
       if(!recognitionIsInitialized){
@@ -125,8 +124,16 @@ const ChatPage = ({ chatId, setListening, initSession }) => {
         window.speechRecognitionObject.onresult = onResult;
 
     }
+    else {
+      if(appState.recordingVideo) {
+         window.speechRecognitionObject.onresult = (e) => {}
+      }
+      else {
+          window.speechRecognitionObject.onresult = onResult;
+      }
+    }
 
-  }, [recognitionIsInitialized, onResult, startListening]);
+  }, [recognitionIsInitialized, onResult, startListening, appState]);
 
   const init = useCallback(() => {
       if (!window.AudioContext) {
@@ -159,7 +166,7 @@ const ChatPage = ({ chatId, setListening, initSession }) => {
         submitText({prompt:speechText}).then((res) => {
             setSpeechText("");
             if(!res){
-              setIsSubmitting(false);
+              setSubmittingPrompt(false);
               isSubmitting = false;
               alert("Check your internet connection");
               return;
@@ -167,7 +174,7 @@ const ChatPage = ({ chatId, setListening, initSession }) => {
             if(res.status  === 504) {
                 const errorMessage = "Could not reach service at the moment. Try entering or saying something else";
                 alert(errorMessage);
-                setIsSubmitting(false);
+                setSubmittingPrompt(false);
                 isSubmitting = false;
                 return;
             }
@@ -176,7 +183,7 @@ const ChatPage = ({ chatId, setListening, initSession }) => {
                 const errorMessage = "Well this is embrassing! Server ran into an issue :(";
                 alert(errorMessage);
                 // dispatch(setMessages([...messages, {isChatGpt: true, text:'Could not get a response from server :('}]));
-                setIsSubmitting(false);
+                setSubmittingPrompt(false);
                 isSubmitting = false;
                 return;
               }
@@ -185,7 +192,7 @@ const ChatPage = ({ chatId, setListening, initSession }) => {
               // messages = [...messages, {isChatGpt:true, text:gptResponseText}]
               // document.getElementById("response").innerText = r.message.choices[0].message.content;
               let audioSource = playByteArray(r.audio.data, init());
-              audioSource.addEventListener('ended', () => {setTimeout(() => {isSubmitting = false; setListening(false);}, 2000); setIsSubmitting(false);});
+              audioSource.addEventListener('ended', () => {setTimeout(() => {isSubmitting = false; setListening(false);}, 2000); setSubmittingPrompt(false);});
             }));
         });
         
@@ -274,10 +281,10 @@ const ChatPage = ({ chatId, setListening, initSession }) => {
 
   </div>)}
     
-  {!isFirstVisit && !recognitionIsInitialized && <div className="flex flex-col items-center w-full animate-pulse mt-8">
+  {/* {!isFirstVisit && !recognitionIsInitialized && <div className="flex flex-col items-center w-full animate-pulse mt-8">
       <ArrowDownIcon className="h-8 w-8 mt-5 mx-auto text-white animate-bounce" />
       <button onClick={showSurvey} className="truncate w-40 chatRow">Click To Win A Reward</button>
-  </div>}
+  </div>} */}
 
   {!recognitionIsInitialized && (
     <div className=" ">

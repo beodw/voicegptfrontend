@@ -9,6 +9,7 @@ const appState = createSlice({
     recordingAudio: false,
     messages: [],
     translatedSignText: '',
+    submittingPrompt: false,
   },
   reducers: {
     toggleSurvey: state => {
@@ -26,10 +27,13 @@ const appState = createSlice({
     },
     setTranslatedSignText: (state, action) => {
       state.translatedSignText = action.payload;
-    }
+    },
+    setSubmittingPrompt: (state, action) => {
+      state.submittingPrompt = action.payload;
+    },
   },
 });
 
-export const { toggleSurvey, toggleAslRecording, toggleVoiceRecording, setMessages, setTranslatedSignText } = appState.actions;
+export const { toggleSurvey, toggleAslRecording, toggleVoiceRecording, setMessages, setTranslatedSignText, setSubmittingPrompt } = appState.actions;
 export const selectCounterValue = state => state.counter.value;
 export default appState.reducer;

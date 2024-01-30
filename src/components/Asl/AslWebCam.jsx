@@ -1,4 +1,4 @@
-import React, {useRef, useEffect, useCallback } from 'react'
+import React, {useRef, useEffect, useCallback, useState } from 'react'
 import Webcam from 'react-webcam';
 import * as tf from "@tensorflow/tfjs";
 import { getMessagesFromLocalStorage, writeTranslation} from '../../utilities';
@@ -6,6 +6,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { setMessages, setTranslatedSignText} from '../../redux/appStateSlice';
 
 var textTranslatedSoFar = '';
+// work around to remove sign transcription only on unmount. Fix later.
+var isMounted = false;
 
 function AslWebCam() {
   const messages = useSelector(s=>s.appState.messages); 
@@ -24,17 +26,22 @@ function AslWebCam() {
     dispatch(setTranslatedSignText(textTranslatedSoFar));
   }
 
+ const appState = useSelector((s)=>s.appState)
+
   // Remove last message if translated text is ''.
   useEffect(() => {
-    return() => {
-      alert(appState.translatedSignText.length);
-      if(appState.translatedSignText.length === 0) return;
+    return ()=> {
+      dispatch(setTranslatedSignText(''));
+      textTranslatedSoFar = '';
+      isMounted = !isMounted;
+      if(isMounted) {return;}
       const msgs = getMessagesFromLocalStorage();
+      if(msgs.at(-1).isChatGpt) return;
       dispatch(setMessages([...msgs.slice(0, -1)]));
-    }
+    };
   }, []);
 
-  const appState = useSelector((s)=>s.appState)
+ 
 
    // Main function
   const runCoco = async () => {
@@ -50,6 +57,7 @@ function AslWebCam() {
   };
 
   const detect = useCallback(async (net) => {
+    if(appState.submittingPrompt) return;
     // Check data is available
     if (
       typeof webcamRef.current !== "undefined" &&
@@ -101,7 +109,7 @@ function AslWebCam() {
       tf.dispose(obj)
 
     }
-  }, [textTranslatedSoFar]);
+  }, [textTranslatedSoFar, appState]);
 
   useEffect(()=>{runCoco(); 
     setTimeout(()=> document.getElementById('webcam-footage-container').classList.add('-translate-x-full'), 200); 

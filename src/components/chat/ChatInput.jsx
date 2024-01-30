@@ -1,9 +1,9 @@
 "use client";
 
 import { MicrophoneIcon } from "@heroicons/react/24/solid";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { toggleAslRecording, toggleVoiceRecording, toggleModality, setTranslatedSignText } from "../../redux/appStateSlice";
+import { toggleAslRecording, toggleVoiceRecording, toggleModality, setTranslatedSignText, setSubmittingPrompt } from "../../redux/appStateSlice";
 import { submitText } from "../../utilities";
 import { setMessages } from "../../redux/appStateSlice";
 const ChatInput = ({ listening }) => {
@@ -11,7 +11,14 @@ const ChatInput = ({ listening }) => {
   const appState = useSelector((s)=>s.appState)
   const dispatch = useDispatch()
 
+
+  const [processing, setProcessing] = useState(false);
+
   const toggleModalityInput = () => {
+    // change to more readable state name.
+    //This if statement checks if the app is still processing audio so we dont switch while audio is still playing.
+    if(listening) return;
+    if(appState.submittingPrompt) return;
     dispatch(toggleAslRecording(s=>!s.recordingVideo));
     dispatch(toggleVoiceRecording(s=>!s.recordingAudio));
   }
@@ -23,6 +30,7 @@ const ChatInput = ({ listening }) => {
 
   const submitTranslation = () => {
     if(appState.translatedSignText.length === 0) return;
+      dispatch(setSubmittingPrompt(true));
       submitText({prompt:appState.translatedSignText}).then((res) => {
               if(!res){
                 alert("Check your internet connection");
@@ -41,7 +49,8 @@ const ChatInput = ({ listening }) => {
                 let gptResponseText = r.message.choices[0].message.content;
                 updateMessages(gptResponseText);
               }));
-      });
+              
+      }).finally(()=>{dispatch(setSubmittingPrompt(false));});
   }
 
   return (
@@ -50,7 +59,7 @@ const ChatInput = ({ listening }) => {
     >
 
       <form
-        className="bg-gray-800 justify-center rounded-2xl border border-gray-700/50 px-5 py-4 space-x-5 flex mx-auto z-50 absolute"
+        className="bg-gray-800 justify-center items-center rounded-2xl border border-gray-700/50 px-5 py-4 space-x-5 flex mx-auto z-50 absolute"
       >
         
            
@@ -58,10 +67,18 @@ const ChatInput = ({ listening }) => {
           <p>Use {appState.recordingVideo ? 'Voice': 'Sign Lang'}</p>
       </div>
       {
-        appState.recordingVideo ?
-              <div onClick={submitTranslation} className="border-gray-700 border chatRow">
-                  <p>{'Submit Translation'}</p>
-              </div>
+        appState.recordingVideo ? 
+        <>
+          {
+            !appState.submittingPrompt ?
+            <div onClick={submitTranslation} className="border-gray-700 border chatRow">
+                <p>{ 'Submit Translation'}</p>
+            </div>
+            : 
+            <>{'Processing...'}</>
+          }
+        </>
+              
               :
               <p
               className="flex"
