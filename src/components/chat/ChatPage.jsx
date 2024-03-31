@@ -306,8 +306,10 @@ const ChatPage = ({ chatId, setListening, initSession, submittingAsl }) => {
 
   { 
     appState.recordingVideo && 
-      <AslWebCam />
+          <AslWebCam />
   }
+
+
 
       {recognitionIsInitialized && messages.map((message, index) => {
         return (

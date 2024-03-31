@@ -4,6 +4,7 @@ import * as tf from "@tensorflow/tfjs";
 import { getMessagesFromLocalStorage, writeTranslation} from '../../utilities';
 import { useDispatch, useSelector } from "react-redux";
 import { setMessages, setTranslatedSignText} from '../../redux/appStateSlice';
+import { StopIcon } from '@heroicons/react/24/solid';
 
 var textTranslatedSoFar = '';
 // work around to remove sign transcription only on unmount. Fix later.
@@ -155,24 +156,35 @@ function AslWebCam() {
 
 
   return (
-     <div id='webcam-footage-container' className="bg-primary transition duration-300 absolute bottom-12 right-[-100px] z-30 flex justify-center items-center overflow-hidden rounded-full w-[100px] h-[70px]">
-        {/* work around to have video recorded to work with tf code. Refactor later.*/ }
-        <Webcam
-                ref={webcamRef}
-                muted={true} 
-                style={{
-                    position: "relative",
-                    marginLeft: "0px",
-                    marginRight: "0px",
-                    left: 0,
-                    right: 0,
-                    textAlign: "center",
-                    zindex: 9,
-                    width: 500,
-                    height: 500
-                }}
-        />
-    </div>
+    <>
+      {
+          false ? (<div id='webcam-footage-container' className="bg-primary transition duration-300 absolute bottom-12 right-[-100px] z-30 flex justify-center items-center overflow-hidden rounded-full w-[100px] h-[70px]">
+            {/* work around to have video recorded to work with tf code. Refactor later.*/ }
+              <Webcam
+                      ref={webcamRef}
+                      muted={true} 
+                      style={{
+                          position: "relative",
+                          marginLeft: "0px",
+                          marginRight: "0px",
+                          left: 0,
+                          right: 0,
+                          textAlign: "center",
+                          zindex: 9,
+                          width: 500,
+                          height: 500
+                      }}
+              />
+        </div>)
+        :
+        (<div className="flex flex-col justify-center items-center p-8 bottom-0 right-0 absolute">
+            <div>Generated Signing</div>
+            <div className="bg-red-500 rounded-full h-12 w-12 h-[32px] w-[32px] flex justify-center items-center shadow hover:cursor-pointer z-30" onClick={()=> alert("Video Stopped")}>
+              <StopIcon className='w-4 h-4'/>
+            </div>
+        </div>)
+      }
+    </>
   )
 }
 
